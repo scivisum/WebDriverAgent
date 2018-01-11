@@ -20,6 +20,7 @@
 #import "XCElementSnapshot.h"
 #import "XCUIApplication.h"
 #import "XCUICoordinate.h"
+#import "XCUICoordinate+FBFix.h"
 #import "XCUIElement+FBIsVisible.h"
 #import "XCUIElement.h"
 #import "XCUIElement+FBUtilities.h"
@@ -234,7 +235,7 @@ const CGFloat FBMinimumTouchEventDelay = 0.1f;
                                                );
   scrollBoundingVector.dx = (CGFloat)floor(copysign(scrollBoundingVector.dx, vector.dx));
   scrollBoundingVector.dy = (CGFloat)floor(copysign(scrollBoundingVector.dy, vector.dy));
-	
+
   NSUInteger scrollLimit = 100;
   BOOL shouldFinishScrolling = NO;
   while (!shouldFinishScrolling) {
@@ -265,7 +266,7 @@ const CGFloat FBMinimumTouchEventDelay = 0.1f;
   XCUICoordinate *startCoordinate = [[XCUICoordinate alloc] initWithCoordinate:appCoordinate pointsOffset:hitpointOffset];
   XCUICoordinate *endCoordinate = [[XCUICoordinate alloc] initWithCoordinate:startCoordinate pointsOffset:vector];
 
-  if (FBPointFuzzyEqualToPoint(startCoordinate.screenPoint, endCoordinate.screenPoint, FBFuzzyPointThreshold)) {
+  if (FBPointFuzzyEqualToPoint(startCoordinate.fb_screenPoint, endCoordinate.fb_screenPoint, FBFuzzyPointThreshold)) {
     return YES;
   }
 
