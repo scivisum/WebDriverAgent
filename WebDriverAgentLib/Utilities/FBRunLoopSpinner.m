@@ -39,7 +39,7 @@ static const NSTimeInterval FBWaitInterval = 0.1;
   self = [super init];
   if (self) {
     _interval = FBWaitInterval;
-    _timeout = 60;
+    _timeout = 240;
   }
   return self;
 }

@@ -17,12 +17,6 @@ env:
 
 matrix:
   include:
-    # Builds
-    - env:
-        - ACTION=build TARGET=runner
-    - env:
-        - ACTION=build TARGET=runner SDK=device
-
     # Analyze
     - env:
         - ACTION=analyze
@@ -54,7 +48,7 @@ matrix:
     # smoke test on xcode 8.3
     - osx_image: xcode8.3
       env:
-        - ACTION=build TARGET=runner PLATFORM_VERSION=10.3
+        - ACTION=analyze PLATFORM_VERSION=10.3
     - osx_image: xcode8.3
       env:
-        - ACTION=build TARGET=runner SDK=device PLATFORM_VERSION=10.3
+        - ACTION=analyze TARGET=runner SDK=device PLATFORM_VERSION=10.3
