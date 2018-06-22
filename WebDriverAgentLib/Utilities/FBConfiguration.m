@@ -25,7 +25,7 @@ static NSUInteger const DefaultPortRange = 100;
 static BOOL FBShouldUseTestManagerForVisibilityDetection = NO;
 static BOOL FBShouldUseSingletonTestManager = YES;
 static BOOL FBShouldUseCompactResponses = YES;
-static NSString *FBAutoAlertAction = FB_ALERT_NONE_ACTION;
+static NSString *FBAutoAlertAction = nil;
 static NSString *FBElementResponseAttributes = @"type,label";
 static NSUInteger FBMaxTypingFrequency = 60;
 
@@ -148,7 +148,7 @@ static NSUInteger FBMaxTypingFrequency = 60;
 
 + (NSString *)autoAlertAction
 {
-  return FBAutoAlertAction;
+  return FBAutoAlertAction ?: FB_ALERT_NONE_ACTION;
 }
 
 @end
