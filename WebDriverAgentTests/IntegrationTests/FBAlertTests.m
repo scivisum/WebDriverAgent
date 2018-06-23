@@ -19,7 +19,6 @@
 #import "XCUIElement+FBTap.h"
 
 @interface FBAlertTests : FBIntegrationTestCase
-@property (nonatomic) id<NSObject> interruptionMonitorToken;
 @end
 
 @implementation FBAlertTests
@@ -32,24 +31,11 @@
     [self launchApplication];
     [self goToAlertsPage];
   });
-  self.interruptionMonitorToken = [self addUIInterruptionMonitorWithDescription:@"WebDriverAgent Alerts Handler" handler:^BOOL(XCUIElement * _Nonnull interruptingElement) {
-    FBAlert *alert = [FBAlert alertWithElement:interruptingElement];
-    NSError *error;
-    if ([FBConfiguration.autoAlertAction isEqualToString:FB_ALERT_ACCEPT_ACTION]) {
-      [alert acceptWithError:&error];
-    }
-    if ([FBConfiguration.autoAlertAction isEqualToString:FB_ALERT_DISMISS_ACTION]) {
-      [alert dismissWithError:&error];
-    }
-
-    return YES;
-  }];
 }
 
 - (void)tearDown
 {
   [super tearDown];
-  [self removeUIInterruptionMonitor:self.interruptionMonitorToken];
   [[FBAlert alertWithApplication:self.testedApplication] dismissWithError:nil];
 }
 
@@ -68,20 +54,6 @@
 - (void)testAlertException
 {
   XCTAssertThrowsSpecificNamed([FBAlert throwRequestedItemObstructedByAlertException], NSException, FBAlertObstructingElementException);
-}
-
-- (void)testAutomaticAlertsHandling
-{
-  FBAlert *alert = [FBAlert alertWithApplication:self.testedApplication];
-  @try {
-    [FBConfiguration setAutoAlertAction:FB_ALERT_ACCEPT_ACTION];
-    [self showApplicationAlert];
-    // it is necessary to interact with the app otherwise the callback does not work
-    [self.testedApplication tap];
-    FBAssertWaitTillBecomesTrue(!alert.isPresent);
-  } @finally {
-    [FBConfiguration setAutoAlertAction:FB_ALERT_NONE_ACTION];
-  }
 }
 
 - (void)testAlertPresence
@@ -208,6 +180,61 @@
   } else {
     XCTAssertThrowsSpecificNamed([alert filterObstructedElements:@[showSheetButton]], NSException, FBAlertObstructingElementException, @"should throw FBAlertObstructingElementException");
   }
+}
+
+@end
+
+
+@interface FBAutoAlertTests : FBIntegrationTestCase
+@property (nonatomic) id<NSObject> interruptionMonitorToken;
+@end
+
+@implementation FBAutoAlertTests
+
+- (void)setUp
+{
+  [super setUp];
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    [self launchApplication];
+    [self goToAlertsPage];
+  });
+  self.interruptionMonitorToken = [self addUIInterruptionMonitorWithDescription:@"WebDriverAgent Alerts Handler" handler:^BOOL(XCUIElement * _Nonnull interruptingElement) {
+    FBAlert *alert = [FBAlert alertWithElement:interruptingElement];
+    NSError *error;
+    if ([FBConfiguration.autoAlertAction isEqualToString:FB_ALERT_ACCEPT_ACTION]) {
+      [alert acceptWithError:&error];
+    }
+    if ([FBConfiguration.autoAlertAction isEqualToString:FB_ALERT_DISMISS_ACTION]) {
+      [alert dismissWithError:&error];
+    }
+
+    return YES;
+  }];
+  [FBConfiguration setAutoAlertAction:FB_ALERT_ACCEPT_ACTION];
+}
+
+- (void)tearDown
+{
+  [[FBAlert alertWithApplication:self.testedApplication] dismissWithError:nil];
+  [FBConfiguration setAutoAlertAction:FB_ALERT_NONE_ACTION];
+  [self removeUIInterruptionMonitor:self.interruptionMonitorToken];
+  [super tearDown];
+}
+
+- (void)showApplicationAlert
+{
+  [self.testedApplication.buttons[FBShowAlertButtonName] fb_tapWithError:nil];
+  FBAssertWaitTillBecomesTrue(self.testedApplication.alerts.count != 0);
+}
+
+- (void)testAutomaticAlertsHandling
+{
+  FBAlert *alert = [FBAlert alertWithApplication:self.testedApplication];
+  [self showApplicationAlert];
+  // it is necessary to interact with the app otherwise the callback does not work
+  [self.testedApplication tap];
+  FBAssertWaitTillBecomesTrue(!alert.isPresent);
 }
 
 @end
