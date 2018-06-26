@@ -56,6 +56,12 @@
   XCTAssertEqualObjects(types.lastObject, @(XCUIElementTypeButton), @"matchingSnapshots should contain only one type");
 }
 
+- (void)testDescendantsCountWithClassName
+{
+  NSInteger count = [self.testedView fb_descendantsCountMatchingClassName:@"XCUIElementTypeButton"];
+  XCTAssertEqual(count, 4);
+}
+
 - (void)testSingleDescendantWithClassName
 {
   NSArray<XCUIElement *> *matchingSnapshots = [self.testedView fb_descendantsMatchingClassName:@"XCUIElementTypeButton" shouldReturnAfterFirstMatch:YES];
