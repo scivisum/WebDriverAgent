@@ -59,6 +59,11 @@
   return self.applicationProcess;
 }
 
+- (void)forwardInvocation:(NSInvocation *)invocation
+{
+  [invocation invokeWithTarget:self.applicationProcess];
+}
+
 - (nullable NSMethodSignature *)methodSignatureForSelector:(SEL)sel
 {
   return [self.applicationProcess methodSignatureForSelector:sel];

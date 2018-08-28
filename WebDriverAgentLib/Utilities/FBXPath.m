@@ -124,21 +124,24 @@ NSString *const FBXPathQueryEvaluationException = @"FBXPathQueryEvaluationExcept
   xmlTextWriterPtr writer = xmlNewTextWriterDoc(&doc, 0);
   if (NULL == writer) {
     [FBLogger logFmt:@"Failed to invoke libxml2>xmlNewTextWriterDoc for XPath query \"%@\"", xpathQuery];
-    return [self throwException:FBXPathQueryEvaluationException forQuery:xpathQuery];
+    [FBXPath throwException:FBXPathQueryEvaluationException forQuery:xpathQuery];
+    return nil;
   }
   NSMutableDictionary *elementStore = [NSMutableDictionary dictionary];
   int rc = [self xmlRepresentationWithRootElement:root writer:writer elementStore:elementStore query:xpathQuery];
   if (rc < 0) {
     xmlFreeTextWriter(writer);
     xmlFreeDoc(doc);
-    return [self throwException:FBXPathQueryEvaluationException forQuery:xpathQuery];
+    [FBXPath throwException:FBXPathQueryEvaluationException forQuery:xpathQuery];
+    return nil;
   }
 
   xmlXPathObjectPtr queryResult = [self evaluate:xpathQuery document:doc];
   if (NULL == queryResult) {
     xmlFreeTextWriter(writer);
     xmlFreeDoc(doc);
-    return [self throwException:FBInvalidXPathException forQuery:xpathQuery];
+    [FBXPath throwException:FBInvalidXPathException forQuery:xpathQuery];
+    return nil;
   }
 
   NSArray *matchingSnapshots = [self collectMatchingSnapshots:queryResult->nodesetval elementStore:elementStore];
@@ -146,7 +149,8 @@ NSString *const FBXPathQueryEvaluationException = @"FBXPathQueryEvaluationExcept
   xmlFreeTextWriter(writer);
   xmlFreeDoc(doc);
   if (nil == matchingSnapshots) {
-    return [self throwException:FBXPathQueryEvaluationException forQuery:xpathQuery];
+    [FBXPath throwException:FBXPathQueryEvaluationException forQuery:xpathQuery];
+    return nil;
   }
   return matchingSnapshots;
 }
