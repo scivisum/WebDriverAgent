@@ -94,7 +94,12 @@
   if (app.processID == 0) {
     return FBResponseWithErrorFormat(@"Failed to launch %@ application", bundleID);
   }
-  [FBSession sessionWithApplication:app];
+  if (requirements[@"defaultAlertAction"]) {
+    [FBSession sessionWithApplication:app defaultAlertAction:(id)requirements[@"defaultAlertAction"]];
+  } else {
+    [FBSession sessionWithApplication:app];
+  }
+
   return FBResponseWithObject(FBSessionCommands.sessionInformation);
 }
 
@@ -144,6 +149,15 @@
     productBundleIdentifier = NSProcessInfo.processInfo.environment[@"WDA_PRODUCT_BUNDLE_IDENTIFIER"];
   }
 
+  NSMutableDictionary *buildInfo = [NSMutableDictionary dictionaryWithDictionary:@{
+    @"time" : [self.class buildTimestamp],
+    @"productBundleIdentifier" : productBundleIdentifier,
+  }];
+  NSString *commitHash = NSProcessInfo.processInfo.environment[@"COMMIT_HASH"];
+  if (nil != commitHash && commitHash.length > 0) {
+    [buildInfo setObject:commitHash forKey:@"commitHash"];
+  }
+
   return
   FBResponseWithStatus(
     FBCommandStatusNoError,
@@ -160,11 +174,7 @@
           @"simulatorVersion" : [[UIDevice currentDevice] systemVersion],
           @"ip" : [XCUIDevice sharedDevice].fb_wifiIPAddress ?: [NSNull null],
         },
-      @"build" :
-        @{
-          @"time" : [self.class buildTimestamp],
-          @"productBundleIdentifier" : productBundleIdentifier,
-        },
+      @"build" : buildInfo.copy
     }
   );
 }
