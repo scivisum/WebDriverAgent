@@ -49,6 +49,12 @@
   return application;
 }
 
++ (instancetype)fb_systemApplication
+{
+  return [self fb_applicationWithPID:
+   [[[XCAXClient_iOS sharedClient] systemApplication] processIdentifier]];
+}
+
 + (instancetype)appWithPID:(pid_t)processID
 {
   if ([NSProcessInfo processInfo].processIdentifier == processID) {
@@ -127,7 +133,7 @@
     return;
   }
   XCUIApplicationProcess *applicationProcess = change[NSKeyValueChangeNewKey];
-  if (!applicationProcess || ![applicationProcess isMemberOfClass:XCUIApplicationProcess.class]) {
+  if (!applicationProcess || [applicationProcess isProxy] || ![applicationProcess isMemberOfClass:XCUIApplicationProcess.class]) {
     return;
   }
   [object setValue:[FBApplicationProcessProxy proxyWithApplicationProcess:applicationProcess] forKey:keyPath];

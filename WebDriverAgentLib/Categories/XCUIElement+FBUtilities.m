@@ -93,7 +93,7 @@ static const NSTimeInterval AX_TIMEOUT = 15.;
   [self resolve];
   
   static NSDictionary *defaultParameters;
-  static NSArray *axAttributes;
+  static NSArray *axAttributes = nil;
   
   static dispatch_once_t initializeAttributesAndParametersToken;
   dispatch_once(&initializeAttributesAndParametersToken, ^{
@@ -108,14 +108,21 @@ static const NSTimeInterval AX_TIMEOUT = 15.;
                       @"enabled",
                       @"elementType"
                       ];
-    
-    NSSet *attributes = [XCElementSnapshot snapshotAttributesForElementSnapshotKeyPaths:propertyNames];
-    
-    axAttributes = XCAXAccessibilityAttributesForStringAttributes(attributes);
-    if (![axAttributes containsObject:FB_XCAXAIsVisibleAttribute]) {
-      axAttributes = [axAttributes arrayByAddingObject:FB_XCAXAIsVisibleAttribute];
+
+    SEL attributesForElementSnapshotKeyPathsSelector = [XCElementSnapshot fb_attributesForElementSnapshotKeyPathsSelector];
+    NSSet *attributes = (nil == attributesForElementSnapshotKeyPathsSelector) ? nil
+      : [XCElementSnapshot performSelector:attributesForElementSnapshotKeyPathsSelector withObject:propertyNames];
+    if (nil != attributes) {
+      axAttributes = XCAXAccessibilityAttributesForStringAttributes(attributes);
+      if (![axAttributes containsObject:FB_XCAXAIsVisibleAttribute]) {
+        axAttributes = [axAttributes arrayByAddingObject:FB_XCAXAIsVisibleAttribute];
+      }
     }
   });
+
+  if (nil == axAttributes) {
+    return nil;
+  }
   
   __block XCElementSnapshot *snapshotWithAttributes = nil;
   __block NSError *innerError = nil;
@@ -223,6 +230,9 @@ static const NSTimeInterval AX_TIMEOUT = 15.;
   return result;
 }
 
+static BOOL FBHasScreenshotProperty = NO;
+static dispatch_once_t onceHasScreenshot;
+
 - (NSData *)fb_screenshotWithError:(NSError **)error
 {
   if (CGRectIsEmpty(self.frame)) {
@@ -230,6 +240,13 @@ static const NSTimeInterval AX_TIMEOUT = 15.;
       *error = [[FBErrorBuilder.builder withDescription:@"Cannot get a screenshot of zero-sized element"] build];
     }
     return nil;
+  }
+
+  dispatch_once(&onceHasScreenshot, ^{
+    FBHasScreenshotProperty = [self respondsToSelector:NSSelectorFromString(@"screenshot")];
+  });
+  if (FBHasScreenshotProperty) {
+    return [self.screenshot valueForKey:@"PNGRepresentation"];
   }
 
   Class xcScreenClass = NSClassFromString(@"XCUIScreen");
