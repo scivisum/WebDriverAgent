@@ -60,8 +60,8 @@ static id<FBResponsePayload> FBNoSuchElementErrorResponseForRequest(FBRouteReque
 {
   FBSession *session = request.session;
   XCUIElement *element = [self.class elementUsing:request.arguments[@"using"]
-                             withValue:request.arguments[@"value"]
-                                 under:session.activeApplication];
+                                        withValue:request.arguments[@"value"]
+                                            under:session.activeApplication];
   if (!element) {
     return FBNoSuchElementErrorResponseForRequest(request);
   }
@@ -72,9 +72,9 @@ static id<FBResponsePayload> FBNoSuchElementErrorResponseForRequest(FBRouteReque
 {
   FBSession *session = request.session;
   NSArray *elements = [self.class elementsUsing:request.arguments[@"using"]
-                               withValue:request.arguments[@"value"]
-                                   under:session.activeApplication
-             shouldReturnAfterFirstMatch:NO];
+                                      withValue:request.arguments[@"value"]
+                                          under:session.activeApplication
+                    shouldReturnAfterFirstMatch:NO];
   return FBResponseWithCachedElements(elements, request.session.elementCache, FBConfiguration.shouldUseCompactResponses);
 }
 
@@ -92,8 +92,8 @@ static id<FBResponsePayload> FBNoSuchElementErrorResponseForRequest(FBRouteReque
   FBElementCache *elementCache = request.session.elementCache;
   XCUIElement *element = [elementCache elementForUUID:request.parameters[@"uuid"]];
   XCUIElement *foundElement = [self.class elementUsing:request.arguments[@"using"]
-                                  withValue:request.arguments[@"value"]
-                                      under:element];
+                                             withValue:request.arguments[@"value"]
+                                                 under:element];
   if (!foundElement) {
     return FBNoSuchElementErrorResponseForRequest(request);
   }
